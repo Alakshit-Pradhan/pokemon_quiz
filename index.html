@@ -1,0 +1,1086 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Pokémon Quiz — Test Your Trainer Knowledge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Press+Start+2P&family=Rubik:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --poke-red:    #EE1515;
+    --poke-red-dk: #B80E0E;
+    --poke-yellow: #FFCB05;
+    --poke-blue:   #3B4CCA;
+    --poke-white:  #FFFFFF;
+    --poke-black:  #1F1F1F;
+    --ok:          #2ECC40;
+    --bad:         #E74C3C;
+    --easy:   #2ECC40;
+    --medium: #F39C12;
+    --hard:   #8E44AD;
+    --shadow: 0 4px 0 rgba(0,0,0,0.15), 0 8px 20px rgba(0,0,0,0.12);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    min-height: 100%;
+    font-family: 'Rubik', system-ui, sans-serif;
+    color: var(--poke-black);
+    background:
+      radial-gradient(circle at 80% 10%, rgba(255,203,5,0.18) 0%, transparent 50%),
+      radial-gradient(circle at 15% 90%, rgba(59,76,202,0.15) 0%, transparent 45%),
+      linear-gradient(180deg, #fff 0%, #ffe9e9 60%, #ffd0d0 100%);
+    background-attachment: fixed;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Pokéball pattern overlay, subtle */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.05;
+    background-image:
+      radial-gradient(circle at 50% 50%, var(--poke-red) 18%, transparent 19%),
+      radial-gradient(circle at 50% 50%, #fff 22%, transparent 23%),
+      radial-gradient(circle at 50% 50%, var(--poke-black) 28%, transparent 29%);
+    background-size: 180px 180px, 220px 220px, 260px 260px;
+    background-position: 0 0, 90px 90px, 180px 0;
+  }
+
+  .app { position: relative; z-index: 1; min-height: 100vh; min-height: 100dvh; }
+
+  .screen {
+    display: none;
+    padding: 24px 20px 40px;
+    max-width: 900px;
+    margin: 0 auto;
+    animation: fadeIn 0.35s ease;
+  }
+  .screen.active { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============== HOME ============== */
+  .brand {
+    text-align: center;
+    padding-top: 30px;
+  }
+  .pokeball {
+    width: 90px; height: 90px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, var(--poke-red) 0 48%, #fff 48% 52%, #fff 52% 100%);
+    border: 4px solid var(--poke-black);
+    position: relative;
+    box-shadow: var(--shadow);
+    animation: spin 2.4s ease-in-out infinite alternate;
+  }
+  .pokeball::before {
+    content: '';
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 26px; height: 26px;
+    background: #fff;
+    border: 4px solid var(--poke-black);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: inset 0 0 0 3px #fff;
+  }
+  .pokeball::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 8px;
+    background: var(--poke-black);
+  }
+  @keyframes spin {
+    0%   { transform: rotate(-8deg); }
+    100% { transform: rotate(8deg); }
+  }
+
+  h1.title {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: clamp(40px, 8vw, 72px);
+    margin: 0;
+    letter-spacing: -0.02em;
+    color: var(--poke-yellow);
+    -webkit-text-stroke: 2px var(--poke-blue);
+    text-shadow:
+      4px 4px 0 var(--poke-blue),
+      6px 6px 0 rgba(59,76,202,0.3);
+    line-height: 1;
+  }
+  .tagline {
+    font-family: 'Rubik', sans-serif;
+    font-weight: 500;
+    font-size: 15px;
+    color: #555;
+    margin-top: 14px;
+    letter-spacing: 0.03em;
+  }
+  .section-label {
+    text-align: center;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    color: var(--poke-red);
+    margin: 36px 0 18px;
+    letter-spacing: 0.1em;
+  }
+
+  .modes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 780px;
+    margin: 0 auto;
+  }
+  .mode-card {
+    background: #fff;
+    border: 4px solid var(--poke-black);
+    border-radius: 18px;
+    padding: 22px 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+    font-family: 'Rubik', sans-serif;
+    color: var(--poke-black);
+  }
+  .mode-card:hover { transform: translateY(-3px); box-shadow: 0 8px 0 rgba(0,0,0,0.15), 0 14px 28px rgba(0,0,0,0.15); }
+  .mode-card:active { transform: translateY(0); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
+  .mode-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 6px;
+    background: var(--accent);
+  }
+  .mode-card[data-mode="easy"]   { --accent: var(--easy); }
+  .mode-card[data-mode="medium"] { --accent: var(--medium); }
+  .mode-card[data-mode="hard"]   { --accent: var(--hard); }
+
+  .mode-icon {
+    font-size: 40px;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .mode-name {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .mode-desc {
+    font-size: 12px;
+    color: #666;
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+  .mode-count {
+    margin-top: 12px;
+    display: inline-block;
+    padding: 5px 12px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  .instructions {
+    max-width: 560px;
+    margin: 30px auto 0;
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+    line-height: 1.7;
+    padding: 0 20px;
+  }
+  .instructions b { color: var(--poke-red); }
+
+  footer.credit {
+    text-align: center;
+    margin-top: 40px;
+    padding: 24px 0 16px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: #888;
+    letter-spacing: 0.1em;
+  }
+  footer.credit b { color: var(--poke-red); }
+
+  /* ============== QUIZ ============== */
+  .quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    font-family: 'Rubik', sans-serif;
+  }
+  .progress-pill {
+    background: #fff;
+    border: 3px solid var(--poke-black);
+    border-radius: 100px;
+    padding: 8px 16px;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: var(--shadow);
+  }
+  .progress-pill b { color: var(--poke-red); }
+  .score-pill {
+    background: var(--poke-yellow);
+    border: 3px solid var(--poke-black);
+    border-radius: 100px;
+    padding: 8px 16px;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: var(--shadow);
+  }
+  .quit-btn {
+    background: #fff;
+    border: 3px solid var(--poke-black);
+    border-radius: 100px;
+    padding: 8px 14px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    font-family: inherit;
+    color: var(--poke-black);
+    transition: background 0.15s;
+  }
+  .quit-btn:hover { background: #ffe0e0; }
+  .quit-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
+
+  .progress-bar-wrap {
+    height: 8px;
+    background: rgba(0,0,0,0.08);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--poke-red), var(--poke-yellow));
+    transition: width 0.35s ease;
+    width: 0;
+  }
+
+  .pokemon-box {
+    background: #fff;
+    border: 4px solid var(--poke-black);
+    border-radius: 22px;
+    padding: 22px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .pokemon-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(255,203,5,0.12), transparent 60%),
+      repeating-linear-gradient(45deg, rgba(0,0,0,0.02) 0 4px, transparent 4px 14px);
+    pointer-events: none;
+  }
+  .question-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: var(--poke-red);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    position: relative;
+  }
+  .pokemon-img-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 280px;
+    aspect-ratio: 1 / 1;
+    margin: 14px auto 8px;
+  }
+  .pokemon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    image-rendering: auto;
+    transition: filter 0.45s ease, opacity 0.35s ease;
+  }
+  .pokemon-img.loading { opacity: 0.25; }
+  .pokemon-img.revealed { animation: pop 0.45s cubic-bezier(0.4, 1.6, 0.5, 1); }
+  @keyframes pop {
+    0%   { transform: scale(0.85); }
+    60%  { transform: scale(1.08); }
+    100% { transform: scale(1); }
+  }
+  .spinner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .spinner::after {
+    content: '';
+    width: 44px; height: 44px;
+    border: 5px solid rgba(0,0,0,0.1);
+    border-top-color: var(--poke-red);
+    border-radius: 50%;
+    animation: spin360 0.8s linear infinite;
+  }
+  .spinner.hidden { display: none; }
+  @keyframes spin360 {
+    to { transform: rotate(360deg); }
+  }
+
+  .question-prompt {
+    margin-top: 8px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+    color: var(--poke-black);
+    position: relative;
+  }
+
+  /* ============== TIMER ============== */
+  .timer-bar {
+    position: relative;
+    height: 42px;
+    background: #fff;
+    border: 3px solid var(--poke-black);
+    border-radius: 100px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .timer-fill {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 100%;
+    background: var(--ok);
+    transition: width 0.1s linear, background-color 0.25s ease;
+  }
+  .timer-fill.warn   { background: #F39C12; }
+  .timer-fill.danger { background: var(--bad); animation: pulse 0.4s ease-in-out infinite alternate; }
+  @keyframes pulse {
+    from { opacity: 0.85; }
+    to   { opacity: 1; }
+  }
+  .timer-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--poke-black);
+    text-shadow: 0 0 6px rgba(255,255,255,0.9), 0 0 2px rgba(255,255,255,0.9);
+    letter-spacing: 0.05em;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .timer-text .icon { margin-right: 6px; }
+
+  .options-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .option-btn {
+    background: #fff;
+    border: 3px solid var(--poke-black);
+    border-radius: 14px;
+    padding: 16px 12px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--poke-black);
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    text-align: center;
+    transition: transform 0.12s, background 0.15s, border-color 0.15s, color 0.15s;
+    min-height: 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .option-btn:hover:not(:disabled) {
+    background: var(--poke-yellow);
+    transform: translateY(-2px);
+  }
+  .option-btn:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
+  .option-btn:disabled { cursor: default; }
+  .option-btn.correct {
+    background: var(--ok);
+    color: #fff;
+    border-color: #1d7d2d;
+    animation: correctShake 0.5s ease;
+  }
+  .option-btn.wrong {
+    background: var(--bad);
+    color: #fff;
+    border-color: #a32a1e;
+    animation: wrongShake 0.5s ease;
+  }
+  @keyframes correctShake {
+    0%, 100% { transform: scale(1); }
+    30%      { transform: scale(1.08); }
+    60%      { transform: scale(0.98); }
+  }
+  @keyframes wrongShake {
+    0%, 100% { transform: translateX(0); }
+    20%      { transform: translateX(-6px); }
+    40%      { transform: translateX(6px); }
+    60%      { transform: translateX(-3px); }
+    80%      { transform: translateX(3px); }
+  }
+
+  /* ============== RESULT ============== */
+  .result-card {
+    background: #fff;
+    border: 4px solid var(--poke-black);
+    border-radius: 22px;
+    padding: 30px 24px;
+    text-align: center;
+    max-width: 480px;
+    margin: 40px auto 0;
+    box-shadow: var(--shadow);
+  }
+  .result-title {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 30px;
+    color: var(--poke-red);
+    margin: 0 0 4px;
+  }
+  .grade-badge {
+    display: inline-block;
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    border: 6px solid var(--poke-black);
+    background: var(--poke-yellow);
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 64px;
+    line-height: 100px;
+    color: var(--poke-red);
+    margin: 16px auto;
+    box-shadow: var(--shadow);
+  }
+  .grade-msg {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+    color: var(--poke-blue);
+    margin-bottom: 14px;
+  }
+  .final-score {
+    font-family: 'Rubik', sans-serif;
+    font-size: 26px;
+    font-weight: 900;
+    color: var(--poke-black);
+    margin-bottom: 8px;
+  }
+  .final-score b { color: var(--poke-red); font-size: 40px; }
+  .final-percent {
+    color: #666;
+    font-size: 15px;
+    margin-bottom: 26px;
+  }
+  .result-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn-primary, .btn-secondary {
+    border: 3px solid var(--poke-black);
+    border-radius: 100px;
+    padding: 14px 28px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform 0.12s;
+    letter-spacing: 0.03em;
+  }
+  .btn-primary { background: var(--poke-red); color: #fff; }
+  .btn-secondary { background: #fff; color: var(--poke-black); }
+  .btn-primary:hover, .btn-secondary:hover { transform: translateY(-2px); }
+  .btn-primary:active, .btn-secondary:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
+
+  /* ============== RESPONSIVE ============== */
+  @media (max-width: 600px) {
+    .screen { padding: 16px 14px 30px; }
+    .modes { grid-template-columns: 1fr; gap: 12px; }
+    .mode-card { padding: 16px 12px; }
+    .mode-icon { font-size: 32px; }
+    .mode-name { font-size: 20px; }
+    h1.title { font-size: 44px; }
+    .pokeball { width: 72px; height: 72px; }
+    .pokeball::before { width: 20px; height: 20px; border-width: 3px; }
+    .options-grid { grid-template-columns: 1fr; }
+    .option-btn { font-size: 16px; padding: 14px 10px; min-height: 54px; }
+    .progress-pill, .score-pill, .quit-btn { font-size: 12px; padding: 6px 12px; }
+    .result-card { padding: 24px 18px; }
+    .grade-badge { width: 88px; height: 88px; line-height: 78px; font-size: 48px; border-width: 5px; }
+    .result-title { font-size: 24px; }
+    .pokemon-img-wrap { max-width: 220px; }
+  }
+  @media (max-width: 360px) {
+    h1.title { font-size: 36px; }
+    .mode-name { font-size: 18px; }
+    .option-btn { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============ HOME ============ -->
+  <section id="screenHome" class="screen active">
+    <div class="brand">
+      <div class="pokeball" aria-hidden="true"></div>
+      <h1 class="title">POKÉMON QUIZ</h1>
+      <p class="tagline">Who's that Pokémon? Test your Trainer knowledge!</p>
+    </div>
+
+    <div class="section-label">▸ CHOOSE YOUR DIFFICULTY ◂</div>
+
+    <div class="modes" id="modesGrid">
+      <button class="mode-card" data-mode="easy" type="button">
+        <span class="mode-icon" aria-hidden="true">🌱</span>
+        <div class="mode-name">Easy</div>
+        <div class="mode-desc">Kanto classics &amp; iconic legendaries</div>
+        <div class="mode-count">50 QUESTIONS</div>
+      </button>
+      <button class="mode-card" data-mode="medium" type="button">
+        <span class="mode-icon" aria-hidden="true">🔥</span>
+        <div class="mode-name">Medium</div>
+        <div class="mode-desc">Johto, Hoenn, Sinnoh favourites</div>
+        <div class="mode-count">50 QUESTIONS</div>
+      </button>
+      <button class="mode-card" data-mode="hard" type="button">
+        <span class="mode-icon" aria-hidden="true">⚡</span>
+        <div class="mode-name">Hard</div>
+        <div class="mode-desc">Deep-cut Pokémon from every region</div>
+        <div class="mode-count">50 QUESTIONS</div>
+      </button>
+    </div>
+
+    <div class="instructions">
+      A Pokémon picture appears — pick its name from <b>4 options</b>. You have
+      50 questions per round. Your score and grade are shown at the end.
+    </div>
+
+    <footer class="credit">Made by <b>ALAKSHIT PRADHAN</b></footer>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section id="screenQuiz" class="screen">
+    <div class="quiz-header">
+      <div class="progress-pill">Q <b id="qNum">1</b> / <span id="qTotal">50</span></div>
+      <div class="score-pill">Score: <span id="qScore">0</span></div>
+      <button class="quit-btn" id="quitBtn" type="button">Quit</button>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+
+    <div class="pokemon-box">
+      <div class="question-label">WHO'S THAT POKÉMON?</div>
+      <div class="pokemon-img-wrap">
+        <img id="pokemonImg" class="pokemon-img loading" alt="Pokémon to identify" />
+        <div class="spinner" id="spinner"></div>
+      </div>
+      <div class="question-prompt">Select the correct name:</div>
+    </div>
+
+    <div class="timer-bar" id="timerBar">
+      <div class="timer-fill" id="timerFill"></div>
+      <div class="timer-text"><span class="icon">⏱</span><span id="timerText">8</span>s</div>
+    </div>
+
+    <div class="options-grid" id="optionsGrid">
+      <button class="option-btn" data-idx="0" type="button"></button>
+      <button class="option-btn" data-idx="1" type="button"></button>
+      <button class="option-btn" data-idx="2" type="button"></button>
+      <button class="option-btn" data-idx="3" type="button"></button>
+    </div>
+  </section>
+
+  <!-- ============ RESULT ============ -->
+  <section id="screenResult" class="screen">
+    <div class="result-card">
+      <div class="result-title">Quiz Complete!</div>
+      <div class="grade-badge" id="gradeBadge">A</div>
+      <div class="grade-msg" id="gradeMsg">Elite Trainer</div>
+      <div class="final-score"><b id="rScore">0</b> / <span id="rTotal">50</span></div>
+      <div class="final-percent" id="rPercent">0%</div>
+      <div class="result-actions">
+        <button class="btn-primary" id="playAgainBtn" type="button">Play Again</button>
+        <button class="btn-secondary" id="homeBtn" type="button">Home</button>
+      </div>
+    </div>
+    <footer class="credit">Made by <b>ALAKSHIT PRADHAN</b></footer>
+  </section>
+
+</div>
+
+<script>
+// ================================================================
+// POKÉMON DATABASE — hand-tagged by difficulty
+// Source of images: PokeAPI sprite CDN (stable GitHub-raw URLs)
+//   https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{id}.png
+// Each Pokémon is stored as [nationalDexId, displayName].
+// ================================================================
+
+const POKEMON = {
+  // EASY — Kanto classics, Pikachu family, starter families, famous legendaries.
+  // These are what even non-fans recognise: anime regulars, merch icons.
+  easy: [
+    [1, 'Bulbasaur'], [2, 'Ivysaur'], [3, 'Venusaur'],
+    [4, 'Charmander'], [5, 'Charmeleon'], [6, 'Charizard'],
+    [7, 'Squirtle'], [8, 'Wartortle'], [9, 'Blastoise'],
+    [10, 'Caterpie'], [12, 'Butterfree'],
+    [13, 'Weedle'], [15, 'Beedrill'],
+    [16, 'Pidgey'], [18, 'Pidgeot'],
+    [19, 'Rattata'], [20, 'Raticate'],
+    [23, 'Ekans'], [24, 'Arbok'],
+    [25, 'Pikachu'], [26, 'Raichu'],
+    [27, 'Sandshrew'], [28, 'Sandslash'],
+    [35, 'Clefairy'], [36, 'Clefable'],
+    [37, 'Vulpix'], [38, 'Ninetales'],
+    [39, 'Jigglypuff'], [40, 'Wigglytuff'],
+    [50, 'Diglett'], [51, 'Dugtrio'],
+    [52, 'Meowth'], [53, 'Persian'],
+    [54, 'Psyduck'], [55, 'Golduck'],
+    [58, 'Growlithe'], [59, 'Arcanine'],
+    [63, 'Abra'], [65, 'Alakazam'],
+    [74, 'Geodude'], [76, 'Golem'],
+    [77, 'Ponyta'], [78, 'Rapidash'],
+    [79, 'Slowpoke'], [80, 'Slowbro'],
+    [93, 'Haunter'], [94, 'Gengar'],
+    [95, 'Onix'],
+    [104, 'Cubone'], [105, 'Marowak'],
+    [125, 'Electabuzz'], [126, 'Magmar'],
+    [129, 'Magikarp'], [130, 'Gyarados'],
+    [131, 'Lapras'], [132, 'Ditto'],
+    [133, 'Eevee'], [134, 'Vaporeon'], [135, 'Jolteon'], [136, 'Flareon'],
+    [143, 'Snorlax'],
+    [144, 'Articuno'], [145, 'Zapdos'], [146, 'Moltres'],
+    [147, 'Dratini'], [149, 'Dragonite'],
+    [150, 'Mewtwo'], [151, 'Mew'],
+    [448, 'Lucario']
+  ],
+
+  // MEDIUM — Johto/Hoenn/Sinnoh starter families, regional favourites,
+  // well-known cross-gen Pokémon. A regular Pokémon fan would know most of these.
+  medium: [
+    [152, 'Chikorita'], [154, 'Meganium'],
+    [155, 'Cyndaquil'], [157, 'Typhlosion'],
+    [158, 'Totodile'], [160, 'Feraligatr'],
+    [172, 'Pichu'], [173, 'Cleffa'],
+    [175, 'Togepi'], [176, 'Togetic'],
+    [179, 'Mareep'], [181, 'Ampharos'],
+    [196, 'Espeon'], [197, 'Umbreon'],
+    [201, 'Unown'], [202, 'Wobbuffet'],
+    [212, 'Scizor'], [214, 'Heracross'],
+    [215, 'Sneasel'], [227, 'Skarmory'],
+    [229, 'Houndoom'], [233, 'Porygon2'],
+    [243, 'Raikou'], [244, 'Entei'], [245, 'Suicune'],
+    [246, 'Larvitar'], [248, 'Tyranitar'],
+    [249, 'Lugia'], [250, 'Ho-Oh'], [251, 'Celebi'],
+    [252, 'Treecko'], [254, 'Sceptile'],
+    [255, 'Torchic'], [257, 'Blaziken'],
+    [258, 'Mudkip'], [260, 'Swampert'],
+    [280, 'Ralts'], [282, 'Gardevoir'],
+    [302, 'Sableye'], [303, 'Mawile'],
+    [310, 'Manectric'], [319, 'Sharpedo'],
+    [359, 'Absol'], [380, 'Latias'], [381, 'Latios'],
+    [382, 'Kyogre'], [383, 'Groudon'], [384, 'Rayquaza'],
+    [385, 'Jirachi'], [386, 'Deoxys'],
+    [387, 'Turtwig'], [389, 'Torterra'],
+    [390, 'Chimchar'], [392, 'Infernape'],
+    [393, 'Piplup'], [395, 'Empoleon'],
+    [445, 'Garchomp'],
+    [447, 'Riolu'],
+    [468, 'Togekiss'], [470, 'Leafeon'], [471, 'Glaceon'],
+    [475, 'Gallade'], [483, 'Dialga'], [484, 'Palkia'], [487, 'Giratina'],
+    [491, 'Darkrai'], [493, 'Arceus'],
+    [658, 'Greninja'], [700, 'Sylveon'],
+    [778, 'Mimikyu']
+  ],
+
+  // HARD — deep-cut Pokémon across all generations. Obscure evolutions,
+  // forgotten baby Pokémon, mid-tier Gen 5/7/8/9 mons that casuals blank on.
+  hard: [
+    [29, 'Nidoran♀'], [32, 'Nidoran♂'],
+    [83, 'Farfetch\'d'],
+    [108, 'Lickitung'], [114, 'Tangela'],
+    [122, 'Mr. Mime'], [128, 'Tauros'],
+    [137, 'Porygon'], [142, 'Aerodactyl'],
+    [162, 'Furret'], [164, 'Noctowl'],
+    [166, 'Ledian'], [168, 'Ariados'],
+    [185, 'Sudowoodo'], [190, 'Aipom'],
+    [203, 'Girafarig'], [205, 'Forretress'],
+    [206, 'Dunsparce'], [211, 'Qwilfish'],
+    [213, 'Shuckle'], [222, 'Corsola'],
+    [225, 'Delibird'], [226, 'Mantine'],
+    [231, 'Phanpy'], [234, 'Stantler'],
+    [235, 'Smeargle'], [241, 'Miltank'],
+    [284, 'Masquerain'], [292, 'Shedinja'],
+    [313, 'Volbeat'], [314, 'Illumise'],
+    [324, 'Torkoal'], [327, 'Spinda'],
+    [332, 'Cacturne'], [335, 'Zangoose'],
+    [336, 'Seviper'], [352, 'Kecleon'],
+    [356, 'Dusclops'], [358, 'Chimecho'],
+    [367, 'Huntail'], [368, 'Gorebyss'],
+    [369, 'Relicanth'], [370, 'Luvdisc'],
+    [411, 'Bastiodon'], [423, 'Gastrodon'],
+    [426, 'Drifblim'], [429, 'Mismagius'],
+    [430, 'Honchkrow'], [437, 'Bronzong'],
+    [442, 'Spiritomb'], [452, 'Drapion'],
+    [462, 'Magnezone'], [474, 'Porygon-Z'],
+    [510, 'Liepard'], [531, 'Audino'],
+    [556, 'Maractus'], [569, 'Garbodor'],
+    [576, 'Gothitelle'], [579, 'Reuniclus'],
+    [596, 'Galvantula'], [601, 'Klinklang'],
+    [614, 'Beartic'], [618, 'Stunfisk'],
+    [622, 'Golett'], [634, 'Zweilous'],
+    [701, 'Hawlucha'], [707, 'Klefki'],
+    [770, 'Palossand'], [777, 'Togedemaru'],
+    [849, 'Toxtricity'], [879, 'Copperajah']
+  ]
+};
+
+// Sanity: 50 questions each mode requires >= 50 entries + enough for decoys.
+// Keep a minimum of 53 (50 correct + 3 decoys for the last one).
+// ================================================================
+// GAME STATE
+// ================================================================
+const state = {
+  mode: null,
+  pool: [],          // shuffled list of [id,name] for correct answers (length 50)
+  allForMode: [],    // full list for current mode (used for decoys)
+  current: 0,
+  score: 0,
+  locked: false,     // true while showing feedback between questions
+  correctIdx: -1,
+  timerHandle: null, // setInterval handle, null when not running
+  timerStart: 0,     // performance.now() at timer start
+  qToken: 0          // monotonic token; async image loads check this to avoid stale starts
+};
+
+const QUESTIONS_PER_ROUND = 50;
+const TIMER_DURATION = 8; // seconds per question
+// Warn / danger thresholds as fractions of TIMER_DURATION — this keeps the
+// same visual pacing (last 60% amber, last 30% red pulsing) regardless of
+// what duration is set above. Change TIMER_DURATION alone to retune.
+const TIMER_WARN_FRAC   = 0.6;
+const TIMER_DANGER_FRAC = 0.3;
+
+// ================================================================
+// HELPERS
+// ================================================================
+const $ = id => document.getElementById(id);
+
+function shuffleInPlace(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function imgURL(id) {
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+// ================================================================
+// TIMER  — 5 seconds per question. If it runs out, the question
+// is marked wrong (correct answer revealed) and we auto-advance.
+// ================================================================
+function startTimer() {
+  stopTimer();
+  state.timerStart = performance.now();
+  updateTimerDisplay(TIMER_DURATION);
+  // 50ms tick is smooth enough visually and cheap. Using setInterval is fine
+  // here — timer only runs during active gameplay, cleared on every selection.
+  state.timerHandle = setInterval(tickTimer, 50);
+}
+
+function tickTimer() {
+  if (state.locked) { stopTimer(); return; }
+  const elapsed = (performance.now() - state.timerStart) / 1000;
+  const remaining = Math.max(0, TIMER_DURATION - elapsed);
+  updateTimerDisplay(remaining);
+  if (remaining <= 0) {
+    stopTimer();
+    handleTimeout();
+  }
+}
+
+function updateTimerDisplay(remaining) {
+  const fill = $('timerFill');
+  const text = $('timerText');
+  if (!fill || !text) return;
+  const pct = (remaining / TIMER_DURATION) * 100;
+  fill.style.width = pct + '%';
+  // Show ceiling seconds (5 → 4 → 3 → 2 → 1) so the number ticks down visibly.
+  text.textContent = Math.ceil(remaining) || 0;
+  fill.classList.toggle('warn',   remaining <= TIMER_DURATION * TIMER_WARN_FRAC && remaining > TIMER_DURATION * TIMER_DANGER_FRAC);
+  fill.classList.toggle('danger', remaining > 0 && remaining <= TIMER_DURATION * TIMER_DANGER_FRAC);
+}
+
+function stopTimer() {
+  if (state.timerHandle !== null) {
+    clearInterval(state.timerHandle);
+    state.timerHandle = null;
+  }
+}
+
+function handleTimeout() {
+  if (state.locked) return;
+  state.locked = true;
+  // Freeze display at 0.
+  updateTimerDisplay(0);
+  const btns = document.querySelectorAll('#optionsGrid .option-btn');
+  btns.forEach(b => b.disabled = true);
+  // Reveal the correct answer in green — no wrong selection to mark red.
+  if (state.correctIdx >= 0 && btns[state.correctIdx]) {
+    btns[state.correctIdx].classList.add('correct');
+  }
+  // Slightly longer pause than a wrong click so the user can read the answer.
+  setTimeout(() => {
+    state.current += 1;
+    nextQuestion();
+  }, 1300);
+}
+
+// ================================================================
+// QUIZ LIFECYCLE
+// ================================================================
+function startQuiz(mode) {
+  state.mode = mode;
+  state.allForMode = POKEMON[mode].slice(); // copy
+  // Build the 50-question pool, shuffled, unique per round
+  state.pool = shuffleInPlace(POKEMON[mode].slice()).slice(0, QUESTIONS_PER_ROUND);
+  state.current = 0;
+  state.score = 0;
+  state.locked = false;
+  $('qTotal').textContent = QUESTIONS_PER_ROUND;
+  $('rTotal').textContent = QUESTIONS_PER_ROUND;
+  updateHUD();
+  showScreen('screenQuiz');
+  nextQuestion();
+}
+
+function updateHUD() {
+  $('qNum').textContent = Math.min(state.current + 1, QUESTIONS_PER_ROUND);
+  $('qScore').textContent = state.score;
+  const pct = (state.current / QUESTIONS_PER_ROUND) * 100;
+  $('progressFill').style.width = pct + '%';
+}
+
+function nextQuestion() {
+  if (state.current >= QUESTIONS_PER_ROUND) {
+    finishQuiz();
+    return;
+  }
+
+  state.locked = false;
+  const correct = state.pool[state.current];
+  const [correctId, correctName] = correct;
+
+  // Pick 3 distinct decoys from the same mode's full list
+  const decoyPool = state.allForMode.filter(p => p[0] !== correctId);
+  shuffleInPlace(decoyPool);
+  const decoys = decoyPool.slice(0, 3);
+
+  // Compose 4 options and shuffle
+  const options = [correct, ...decoys];
+  shuffleInPlace(options);
+  state.correctIdx = options.findIndex(o => o[0] === correctId);
+
+  // Render options
+  const btns = document.querySelectorAll('#optionsGrid .option-btn');
+  btns.forEach((btn, i) => {
+    btn.textContent = options[i][1];
+    btn.disabled = false;
+    btn.classList.remove('correct', 'wrong');
+  });
+
+  // Reset timer display to full state (shown paused until image loads)
+  stopTimer();
+  updateTimerDisplay(TIMER_DURATION);
+
+  // Render Pokémon image with loading state
+  const img = $('pokemonImg');
+  const spinner = $('spinner');
+  img.classList.add('loading');
+  img.classList.remove('revealed');
+  spinner.classList.remove('hidden');
+  img.alt = 'Pokémon to identify';
+
+  // Bump token so any old preload callbacks from a prior question are ignored.
+  // Without this, if a slow Gen-1 image arrives AFTER the user has already
+  // answered and moved to Q2, the old onload handler would restart the timer.
+  state.qToken += 1;
+  const myToken = state.qToken;
+
+  const url = imgURL(correctId);
+  const preload = new Image();
+  preload.onload = () => {
+    if (myToken !== state.qToken) return; // stale — user moved on already
+    img.src = url;
+    img.classList.remove('loading');
+    img.classList.add('revealed');
+    spinner.classList.add('hidden');
+    startTimer();  // only start the clock once the image is actually visible
+  };
+  preload.onerror = () => {
+    if (myToken !== state.qToken) return;
+    // Fallback: try the regular sprite if official-artwork is missing
+    const fallback = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${correctId}.png`;
+    img.src = fallback;
+    img.classList.remove('loading');
+    img.classList.add('revealed');
+    spinner.classList.add('hidden');
+    startTimer();
+  };
+  preload.src = url;
+
+  // Preload the NEXT question's image in the background for smoother UX
+  if (state.current + 1 < QUESTIONS_PER_ROUND) {
+    const nextId = state.pool[state.current + 1][0];
+    new Image().src = imgURL(nextId);
+  }
+
+  updateHUD();
+}
+
+function selectOption(idx) {
+  if (state.locked) return;
+  // Stop the timer the moment a choice is made — no point ticking anymore.
+  stopTimer();
+  state.locked = true;
+
+  const btns = document.querySelectorAll('#optionsGrid .option-btn');
+  btns.forEach(b => b.disabled = true);
+
+  const isCorrect = idx === state.correctIdx;
+  if (isCorrect) {
+    btns[idx].classList.add('correct');
+    state.score += 1;
+  } else {
+    btns[idx].classList.add('wrong');
+    btns[state.correctIdx].classList.add('correct');
+  }
+
+  // Advance after a short delay so user sees feedback
+  setTimeout(() => {
+    state.current += 1;
+    nextQuestion();
+  }, isCorrect ? 700 : 1100);
+}
+
+function finishQuiz() {
+  stopTimer();
+  $('rScore').textContent = state.score;
+  const pct = Math.round((state.score / QUESTIONS_PER_ROUND) * 100);
+  $('rPercent').textContent = pct + '%';
+  const { grade, msg } = gradeFor(pct);
+  $('gradeBadge').textContent = grade;
+  $('gradeMsg').textContent = msg;
+  showScreen('screenResult');
+}
+
+function gradeFor(pct) {
+  if (pct >= 90) return { grade: 'S', msg: 'Pokémon Master!' };
+  if (pct >= 75) return { grade: 'A', msg: 'Elite Trainer' };
+  if (pct >= 60) return { grade: 'B', msg: 'Skilled Trainer' };
+  if (pct >= 40) return { grade: 'C', msg: 'Rookie Trainer' };
+  return { grade: 'D', msg: 'Keep Practicing!' };
+}
+
+function quitToHome() {
+  if (state.current > 0 && !confirm('Quit the current quiz? Your progress will be lost.')) return;
+  stopTimer();
+  // Also bump qToken so any in-flight image load won't start a new timer.
+  state.qToken += 1;
+  showScreen('screenHome');
+}
+
+// ================================================================
+// EVENT WIRING
+// ================================================================
+document.querySelectorAll('.mode-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const mode = card.getAttribute('data-mode');
+    startQuiz(mode);
+  });
+});
+
+document.querySelectorAll('#optionsGrid .option-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const idx = parseInt(btn.getAttribute('data-idx'), 10);
+    selectOption(idx);
+  });
+});
+
+$('quitBtn').addEventListener('click', quitToHome);
+$('playAgainBtn').addEventListener('click', () => startQuiz(state.mode));
+$('homeBtn').addEventListener('click', () => showScreen('screenHome'));
+
+// Keyboard support: 1-4 to pick options during quiz
+document.addEventListener('keydown', e => {
+  if (!$('screenQuiz').classList.contains('active')) return;
+  const n = parseInt(e.key, 10);
+  if (n >= 1 && n <= 4) selectOption(n - 1);
+});
+
+// ================================================================
+// SANITY CHECK ON LOAD — log if any mode has too few entries
+// ================================================================
+(function sanityCheck() {
+  for (const mode of ['easy', 'medium', 'hard']) {
+    const n = POKEMON[mode].length;
+    if (n < QUESTIONS_PER_ROUND + 3) {
+      console.warn(`[PokemonQuiz] ${mode} mode has only ${n} entries; need >= ${QUESTIONS_PER_ROUND + 3}`);
+    }
+  }
+})();
+</script>
+</body>
+</html>
